@@ -1,0 +1,111 @@
+00001016 Starting Address
+Assembler used: EASy68K Editor/Assembler v5.16.01
+Created On: 05/05/2024 22:30:50
+
+00000000                             1  *------------------------------------------------
+00000000                             2  * Titulo : P1 (2023-2024) - Sieve of Eratosthenes
+00000000                             3  * Autores: Ortiz García, Alex y Pérez Tercero, Rafa 
+00000000                             4  *------------------------------------------------
+00001000                             5      ORG    $1000
+00001000  =0000000A                  6  N   EQU 10
+00001000                             7  P   DS.B N  
+0000100A                             8      DS.W 0      
+0000100A                             9  C   DS.W 1  
+0000100C                            10  *------------------------------------------------
+0000100C                            11  Z   DS.B N  ;VECTOR QUE ALMACENARÁ LA POSICIÓN
+00001016                            12              ;DE LOS TACHADOS (1 = PRIMO, 0 = NO PRIMO)
+00001016                            13      DS.W 0
+00001016                            14              
+00001016                            15  START: 
+00001016                            16       
+00001016  103C 000A                 17      MOVE.B  #N,D0
+0000101A  0C40 0000                 18      CMPI.W   #0,D0  ;COMPROBAMOS QUE D0 NO SEA 0
+0000101E  6700 006E                 19      BEQ     END     ;SI SE DA EL CASO SE ACABA EL PROGRAMA
+00001022  41F8 1000                 20      LEA.L   P,A0   
+00001026  43F8 100C                 21      LEA.L   Z,A1      
+0000102A  4278 100A                 22      CLR.W   C
+0000102E  5300                      23      SUBQ.B  #1,D0   ;DECREMENTAMOS D0 EN 1 PARA EL BUCLE DBRA
+00001030                            24                      ;QUE VACIA EL VECTOR P
+00001030                            25      
+00001030                            26  EMPTY:              ;ESTE BUCLE PERMITIRÁ ESTABLECER A CERO
+00001030                            27                      ;TODO EL VECTOR DE PRIMOS Y A 1
+00001030                            28                      ;EL VECTOR DE POSICIONES
+00001030                            29                      
+00001030  4218                      30      CLR.B   (A0)+
+00001032  12FC 0001                 31      MOVE.B  #1,(A1)+    ;SUPONEMOS QUE DE PRINCIPIO TODOS
+00001036                            32                          ;TODOS LOS NÚMEROS SON PRIMOS
+00001036  51C8 FFF8                 33      DBRA    D0,EMPTY
+0000103A                            34      
+0000103A  700A                      35      MOVE.L  #N,D0    ;REESTABLECEMOS EL REGISTRO D0 CON N
+0000103C  41F8 1000                 36      LEA.L   P,A0     ;REESTABLECEMOS LA DIRECCIÓN EN EL REGISTRO A0
+00001040  227C 00000000             37      MOVE.L  #0,A1    ;ESTABLECEMOS EL REGISTRO A1 A 0
+00001046  10FC 0001                 38      MOVE.B  #1,(A0)+ ;COLOCAMOS EL PRIMER PRIMO (1) EN EL VECTOR P
+0000104A  5278 100A                 39      ADDQ.W  #1,C     ;INCREMENTAMOS EN 1 EL CONTADOR DE PRIMOS C
+0000104E  123C 0001                 40      MOVE.B  #1,D1    ;INICIALIZAMOS EL REGISTRO D1 CON 1
+00001052                            41      
+00001052                            42  LOOP_OUTER:                ;A PARTIR DE AHORA SE INICIARÁ EL BUCLE 
+00001052                            43                             ;PARA BUSCAR LOS PRIMOS MENORES O IGUALES QUE N
+00001052  5241                      44      ADDQ.W  #1,D1
+00001054  B240                      45      CMP.W   D0,D1          ;SI D1 ES MAYOR QUE D0 SALE DE LOOP_OUTER
+00001056  6200 0016                 46      BHI     SKIP 
+0000105A  3401                      47      MOVE.W  D1,D2
+0000105C                            48      
+0000105C                            49  LOOP_CROSSED:                 ;ESTE BUCLE PERMITIRÁ BUSCAR LOS MÚLTIPLOS
+0000105C                            50                                ;DE CADA NÚMERO SUPUESTAMENTE PRIMO
+0000105C                            51      
+0000105C  D441                      52      ADD.W   D1,D2             ;D2 = D2 + D1
+0000105E  3242                      53      MOVE.W  D2,A1
+00001060  5349                      54      SUBQ.W  #1,A1
+00001062  B440                      55      CMP.W   D0,D2             ;SI D2 ES MAYOR QUE D0 VUELVE A LOOP_OUTER
+00001064  62EC                      56      BHI LOOP_OUTER
+00001066  137C 0000 100C            57      MOVE.B  #0,Z(A1)          ;COLOCA UN 0 EN LA POSICIÓN (A1) DEL VECTOR Z
+0000106C  60EE                      58      BRA LOOP_CROSSED
+0000106E                            59      
+0000106E                            60  SKIP:                         ;ESTA ETIQUETA SIRVE COMO SALTO Y NO COMO BUCLE                    
+0000106E                            61  
+0000106E  327C 0001                 62      MOVE.W #1,A1              ;REUTILIZAMOS A1 PARA EL VECTOR Z, POR ESO LO
+00001072                            63                                ;LO REINICIAMOS A 1, YA QUE LA PRIMERA POSICIÓN
+00001072                            64                                ;DE P YA ESTÁ RELLENA
+00001072                            65  
+00001072                            66  FILL_VECTOR:
+00001072                            67      
+00001072  1629 100C                 68      MOVE.B  Z(A1),D3          ;LE MOVEMOS EL CONTENIDO DE Z EN A1 A D3
+00001076  B2C0                      69      CMP.W D0,A1               ;SI A1 ES MAYOR QUE D0 SALTA A LA ETIQUETA END
+00001078                            70                                ;LA CUAL DESEMBOCA EN EL FINAL DEL PROGRAMA
+00001078  6200 0014                 71      BHI END
+0000107C  5249                      72      ADDQ.W  #1,A1             ;INCREMENTAMOS EN 1 EL REGISTRO A1
+0000107E  0C43 0001                 73      CMPI.W #1,D3              ;SI D3 ES IGUAL A 1 CONTINÚA, SINO SALTA
+00001082                            74                                ;AL INICIO DEL BUCLE FILL_VECTOR
+00001082  66EE                      75      BNE FILL_VECTOR
+00001084  3809                      76      MOVE.W  A1,D4             ;USAMOS D4 PARA ALMACENAR LA POSICIÓN QUE
+00001086                            77                                ;CONTIENE A 4
+00001086  10C4                      78      MOVE.B  D4,(A0)+          ;COLOCAMOS EL CONTENIDO DE D4 EN LA POSICIÓN
+00001088                            79                                ;CORRESPONDIENTE EN EL VECTOR P  
+00001088  5278 100A                 80      ADDQ.W  #1,C              ;INCREMENTAMOS EN 1 EL CONTADOR C  
+0000108C  60E4                      81      BRA FILL_VECTOR
+0000108E                            82        
+0000108E                            83                       
+0000108E                            84  END:
+0000108E  103C 0009                 85      MOVE.B #9,D0
+00001092  4E4F                      86      TRAP    #15             
+00001094                            87  
+00001094                            88      END    START        
+
+No errors detected
+No warnings generated
+
+
+SYMBOL TABLE INFORMATION
+Symbol-name         Value
+-------------------------
+C                   100A
+EMPTY               1030
+END                 108E
+FILL_VECTOR         1072
+LOOP_CROSSED        105C
+LOOP_OUTER          1052
+N                   A
+P                   1000
+SKIP                106E
+START               1016
+Z                   100C
